@@ -17,11 +17,11 @@ backbone = SOHTECBackbone(cfg).to(device)
 model_regression = RegressionWrapper(backbone, num_classes=1).to(device)
 model_regression.eval()
 
-x = torch.randn(B, C, L, device=device)  # (B,C,L)
+x = torch.randn(B, C, L, device=device)  # (B,C,L), dummy input
 key_padding_mask = torch.zeros(B, L, dtype=torch.bool, device=device)  # True=masked
 
 with torch.inference_mode():
-    y = model_regression(x, key_padding_mask)  # (B,1), predicted SOH
+    y = model_regression(x, key_padding_mask)  # (B,1), predicted value
 print(y.shape, y)
 
 # mask prediction
@@ -36,11 +36,12 @@ print(loss.item())
 model_soh_compare = SohCompareWrapper(backbone).to(device)
 model_soh_compare.eval()
 
+# dummy inputs and target
 x1 = torch.randn(B, C, L, device=device)
 x2 = torch.randn(B, C, L, device=device)
 key_padding_mask1 = torch.zeros(B, L, dtype=torch.bool, device=device)
 key_padding_mask2 = torch.zeros(B, L, dtype=torch.bool, device=device)
-target = torch.randint(0, 2, (B,), device=device)
+target = torch.randint(0, 2, (B,), device=device)  # 1 if SOH(x1) > SOH(x2), else 0
 
 with torch.inference_mode():
     loss, logits = model_soh_compare(x1, x2, target, key_padding_mask1, key_padding_mask2)
